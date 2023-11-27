@@ -16,7 +16,7 @@ pip -r requirements.txt
    
 ## Dependencies
 Have no dependency on wg-tools.
-Only a Python 3rd library `pynal` is needed to generate public key and private key.
+Only a Python 3rd library `pynacl` is needed to generate public key and private key.
 
 ## License
 Using AGPL-3.0
