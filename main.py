@@ -1,12 +1,16 @@
 # coding=utf-8
-from config import *
 import base64
 import ipaddress
 import os
+
 import nacl.public
 
+from config import *
 
-def generate_peer(public_key, preshared_key, allowed_ips, endpoint, persistent_keepalive):
+
+def generate_peer(
+    public_key, preshared_key, allowed_ips, endpoint, persistent_keepalive
+):
     ret = f"[Peer]\nPublicKey = {public_key}\n"
     if preshared_key:
         ret += f"PresharedKey = {preshared_key}\n"
@@ -21,7 +25,20 @@ def generate_peer(public_key, preshared_key, allowed_ips, endpoint, persistent_k
     return ret
 
 
-def generate_interface(private_key, listen_port, fw_mark, address, dns, mtu, table, pre_up, post_up, pre_down, post_down, save_config):
+def generate_interface(
+    private_key,
+    listen_port,
+    fw_mark,
+    address,
+    dns,
+    mtu,
+    table,
+    pre_up,
+    post_up,
+    pre_down,
+    post_down,
+    save_config,
+):
     ret = f"[Interface]\nPrivateKey = {private_key}\n"
     if listen_port:
         ret += f"ListenPort = {listen_port}\n"
@@ -71,12 +88,12 @@ def generate_psk():
 
 def generate_ipv4_list(cidr, num):
     cidr = ipaddress.IPv4Network(cidr, False)
-    return list(map(lambda x: str(x), list(cidr.hosts())[0:num + 1]))
+    return list(map(lambda x: str(x), list(cidr.hosts())[0 : num + 1]))
 
 
 def generate_ipv6_list(cidr, num, new_prefix):
     cidr = ipaddress.IPv6Network(cidr, False).subnets(new_prefix=int(new_prefix))
-    return list(map(lambda x: str(x), list(cidr)[0:num + 1]))
+    return list(map(lambda x: str(x), list(cidr)[0 : num + 1]))
 
 
 def experimental_illegal_ipv6_postfix_assign(ipv6_block, postfix, number):
@@ -95,10 +112,10 @@ def experimental_illegal_ipv6_postfix_assign(ipv6_block, postfix, number):
     :return: A list contains IPv6 address string
     """
 
-    group = ipv6_block.split(':')
+    group = ipv6_block.split(":")
     ret = list()
     for i in range(number):
-        ret.append(f"{group[0]}:{group[1]}:{group[2]}:{postfix}:{str(i)}/64")
+        ret.append(f"{group[0]}:{group[1]}:{group[2]}:{group[3]}:{postfix}:{str(i)}/64")
     return ret
 
 
@@ -129,10 +146,16 @@ def process():
     if ipv4_range and ipv6_range:
         ipv4_list = generate_ipv4_list(ipv4_range, client_number + 1)
         if experimental_assign_64_block_flag:
-            ipv6_list = experimental_illegal_ipv6_postfix_assign(ipv6_range, experimental_postfix, client_number + 1)
+            ipv6_list = experimental_illegal_ipv6_postfix_assign(
+                ipv6_range, experimental_postfix, client_number + 1
+            )
         else:
-            ipv6_list = generate_ipv6_list(ipv6_range, client_number + 1, ipv6_new_prefix)
-        server_address = ipv4_list[0] + "/" + ipv4_range.split("/")[1] + ", " + ipv6_list[0]
+            ipv6_list = generate_ipv6_list(
+                ipv6_range, client_number + 1, ipv6_new_prefix
+            )
+        server_address = (
+            ipv4_list[0] + "/" + ipv4_range.split("/")[1] + ", " + ipv6_list[0]
+        )
     elif ipv4_range:
         ipv4_list = generate_ipv4_list(ipv4_range, client_number + 1)
         for i in range(len(ipv4_list)):
@@ -140,24 +163,41 @@ def process():
         server_address = ipv4_list[0]
     elif ipv6_range:
         if experimental_assign_64_block_flag:
-            ipv6_list = experimental_illegal_ipv6_postfix_assign(ipv6_range, experimental_postfix, client_number + 1)
+            ipv6_list = experimental_illegal_ipv6_postfix_assign(
+                ipv6_range, experimental_postfix, client_number + 1
+            )
         else:
-            ipv6_list = generate_ipv6_list(ipv6_range, client_number + 1, ipv6_new_prefix)
+            ipv6_list = generate_ipv6_list(
+                ipv6_range, client_number + 1, ipv6_new_prefix
+            )
         for i in range(len(ipv6_list)):
             ipv4_list.append("")
         server_address = ipv6_list[0]
     else:
         exit()
 
-    server_interface = generate_interface(key_pairs[0][0], server_listen_port, server_fwmark, server_address,
-                                          server_dns, server_mtu, server_table, server_preup, server_postup,
-                                          server_predown, server_postdown, server_saveconfig)
+    server_interface = generate_interface(
+        key_pairs[0][0],
+        server_listen_port,
+        server_fwmark,
+        server_address,
+        server_dns,
+        server_mtu,
+        server_table,
+        server_preup,
+        server_postup,
+        server_predown,
+        server_postdown,
+        server_saveconfig,
+    )
     server_peers = list()
     client_interface = list()
     client_peer = list()
     client_address = ""
 
-    for key_pair, ipv4, ipv6, psk in zip(key_pairs[1:], ipv4_list[1:], ipv6_list[1:], preshared_keys):
+    for key_pair, ipv4, ipv6, psk in zip(
+        key_pairs[1:], ipv4_list[1:], ipv6_list[1:], preshared_keys
+    ):
         if ipv4 and ipv6:
             client_address = ipv4 + ", " + ipv6
         elif ipv4:
@@ -166,12 +206,36 @@ def process():
             client_address = ipv6
         else:
             exit()
-        server_peers.append(generate_peer(key_pair[1], psk, client_address, "", server_persistent_keepalive))
+        server_peers.append(
+            generate_peer(
+                key_pair[1], psk, client_address, "", server_persistent_keepalive
+            )
+        )
         client_interface.append(
-            generate_interface(key_pair[0], "", client_fwmark, client_address, client_dns, client_mtu, client_table,
-                               client_preup, client_postup, client_predown, client_postdown, client_saveconfig))
-        client_peer.append(generate_peer(key_pairs[0][1], psk, client_allowed_ips, client_endpoint,
-                                         client_persistent_keepalive))
+            generate_interface(
+                key_pair[0],
+                "",
+                client_fwmark,
+                client_address,
+                client_dns,
+                client_mtu,
+                client_table,
+                client_preup,
+                client_postup,
+                client_predown,
+                client_postdown,
+                client_saveconfig,
+            )
+        )
+        client_peer.append(
+            generate_peer(
+                key_pairs[0][1],
+                psk,
+                client_allowed_ips,
+                client_endpoint,
+                client_persistent_keepalive,
+            )
+        )
 
     server_config = generate_config(server_interface, server_peers)
     for i, p in zip(client_interface, client_peer):
@@ -191,5 +255,5 @@ def process():
     print("Generated at ./conf dir.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     process()
