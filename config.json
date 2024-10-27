@@ -1,0 +1,33 @@
+{
+    "client_number": 2,
+    "ipv4_range": "192.168.2.1/24",
+    "ipv6_range": "2001:DB8::8A2E:370:7334/56",
+    "preshared_key_flag": true,
+    "server": {
+        "persistent_keepalive": "",
+        "listen_port": "51820",
+        "fwmark": "",
+        "dns": "",
+        "mtu": "",
+        "table": "",
+        "preup": "",
+        "postup": "iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE",
+        "predown": "",
+        "postdown": "iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE",
+        "saveconfig": ""
+    },
+    "client": {
+        "allowed_ips": "0.0.0.0/0, ::/0",
+        "endpoint": "example.com:51820",
+        "persistent_keepalive": "",
+        "fwmark": "",
+        "dns": "8.8.8.8",
+        "mtu": "",
+        "table": "",
+        "preup": "",
+        "postup": "",
+        "predown": "",
+        "postdown": "",
+        "saveconfig": ""
+    }
+}

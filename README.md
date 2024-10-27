@@ -11,7 +11,7 @@ A Wireguard Config Generator that supports IPv6 and more.
 ```
 pip -r requirements.txt
 ```
-2. Edit `config.py` according to your need.
+2. Edit `config.json` according to your need.
 3. Run `main.py`
    
 ## Dependencies
