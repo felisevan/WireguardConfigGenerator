@@ -140,7 +140,7 @@ def process() -> None:
             raise ValueError(
                 f"Cannot create sufficient clients: {client_number}. IPv4: {len(ipv4_list)-1}, IPv6: { len(ipv6_list)-1}"
             )
-        server_address = f"{ipv4_list[0]}/{ipv4_range.split('/')[1]}, {ipv6_list[0]}"
+        server_address = f"{ipv4_list[0]}/{ipv4_range.split('/')[1]}, {ipv6_list[0]}/{ipv6_range.split('/')[1]}"
     elif ipv4_list:
         if len(ipv4_list) < total_number:
             raise ValueError(
@@ -153,7 +153,7 @@ def process() -> None:
             raise ValueError(
                 f"Cannot create sufficient clients: {client_number}. IPv6: { len(ipv6_list)-1}"
             )
-        server_address = ipv6_list[0]
+        server_address = f"{ipv6_list[0]}/{ipv6_range.split('/')[1]}"
         ipv4_list = [""] * len(ipv6_list)
 
     # Server Interface Configuration
@@ -178,6 +178,7 @@ def process() -> None:
     for key_pair, ipv4, ipv6, psk in zip(
         key_pairs[1:], ipv4_list[1:], ipv6_list[1:], preshared_keys
     ):
+        # using /32 for v4 and /128 for v6
         client_address = f"{ipv4}, {ipv6}".strip(", ")
 
         server_peer = PeerConfig(
