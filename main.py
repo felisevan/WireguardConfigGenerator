@@ -132,7 +132,11 @@ def process() -> None:
 
     server_address = ""
     if ipv4_list and ipv6_list:
-        if len(ipv4_list) < total_number or len(ipv6_list) < total_number:
+        if (
+            len(ipv4_list) < total_number
+            or len(ipv6_list) < total_number
+            or len(ipv4_list) != len(ipv6_list)
+        ):
             raise ValueError(
                 f"Cannot create sufficient clients: {client_number}. IPv4: {len(ipv4_list)-1}, IPv6: { len(ipv6_list)-1}"
             )
